@@ -137,7 +137,6 @@ h6 {
   line-height: 1;
   font-weight: 700;
   letter-spacing: 2px;
-  text-transform: uppercase;
 }
 
 #header .logo a {
@@ -380,7 +379,42 @@ h6 {
 .navbar-mobile .dropdown ul li {
   min-width: 200px;
 }
-
+/* animation code */
+.stage, .subkey, .sbox-row, .output {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+}
+.byte {
+  display: inline-block;
+  padding: 10px;
+  margin: 2px;
+  border: 1px solid #333;
+  width: 150px;
+  text-align: center;
+  font-family: monospace;
+  transition: background-color 0.3s;
+}
+.highlight {
+  background-color: #f7c6c7;
+}
+.sbox {
+  padding: 10px;
+  margin: 5px;
+  border: 1px solid #333;
+  text-align: center;
+  width: 160px;
+}
+.connector {
+  text-align: center;
+  font-size: 24px;
+  color: #666;
+}
+h3 {
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+/* end animation */
 .navbar-mobile .dropdown ul a {
   padding: 10px 20px;
   color: #151515;
@@ -1424,7 +1458,7 @@ section {
   padding: 2px 0 2px 0;
   line-height: 1;
   font-weight: 700;
-  text-transform: uppercase;
+  
 }
 
 #footer .footer-top .footer-info h3 span {
