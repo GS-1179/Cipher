@@ -687,3 +687,31 @@
 		width: 100%; 
 	}
 }
+
+.round-container {
+  display: none; /* Initially hide all rounds */
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.round-container.active {
+  display: block;
+  opacity: 1;
+}
+
+.step {
+  margin-bottom: 20px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.step.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Style to highlight the active table */
+.step-table.active {
+  border: 2px solid rgb(86, 242, 27); /* Green for active */
+}
