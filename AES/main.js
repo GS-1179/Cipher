@@ -267,6 +267,8 @@ function aes_init() {
     // Display the first round
     currentRoundIndex = 0;
     displayRound(currentRoundIndex);
+    document.getElementById("prevRoundBtn").style.display = "inline-block";
+    document.getElementById("nextRoundBtn").style.display = "inline-block";
 }
 
 function storeRoundData(roundNumber, roundData) {
@@ -276,7 +278,11 @@ function storeRoundData(roundNumber, roundData) {
 function displayRound(index) {
   const roundInfo = aesRoundsData[index];
   const stepsBox = document.querySelector("#results-container");
-  stepsBox.innerHTML = `<h2> ROUND : ${roundInfo.round}</h2> <br>`;
+
+  // Check if this is the final round to update heading
+  const isFinalRound = index === aesRoundsData.length - 1;
+  const headingText = isFinalRound ? "Final Round Result" : `ROUND : ${roundInfo.round}`;
+  stepsBox.innerHTML = `<h2>${headingText}</h2> <br>`;
 
   // Loop through each key in round data to display each transformation step
   for (const [step, matrix] of Object.entries(roundInfo.data)) {
