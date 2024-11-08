@@ -1,7 +1,7 @@
 let aesRoundsData = [];
 let currentRoundIndex = 0;
 let currentStepIndex = 0;
-const stepNames = ["input", "key", "addRoundKey", "subBytes", "shiftRows", "mixColumns"]; 
+const stepNames = ["input", "key", "subBytes", "shiftRows", "mixColumns", "addRoundKey"]; 
 
 Array.prototype.rotate = (function() {
   // save references to array functions to make lookup faster
@@ -190,10 +190,17 @@ function substituteBytes(arr) {
 }
 
 function shiftRows(arr) {
-  for(let i=0; i<4; i++) {
-    arr[i].rotate(i);
+  // Create a deep copy of the original array so that the input array remains unchanged
+  const newArr = arr.map(row => [...row]);  // Make a shallow copy of each row
+
+  // Perform rotations on the new array
+  for (let i = 0; i < 4; i++) {
+    const row = newArr[i];
+    for (let j = 0; j < i; j++) {
+      row.push(row.shift());  // Rotate left and move the first element to the end
+    }
   }
-  return arr;
+  return newArr;
 }
 
 function mixColumns(arr) {
@@ -290,40 +297,135 @@ function displayRound(roundIndex) {
   const headingText = isFinalRound ? "Final Round Result" : `ROUND : ${roundInfo.round}`;
   stepsBox.innerHTML = `<h2>${headingText}</h2> <br>`;
 
-  // Display each step in the round
-  let stepIndex = 0;
-  for (const stepName of stepNames) {
-    const matrix = roundInfo.data[stepName];
-    if (matrix) {
-      // Create a div container for each step
-      const stepContainer = document.createElement("div");
-      stepContainer.classList.add("step");
-      stepContainer.id = `step-${stepIndex}`;
+  // Step B: INPUT
+  const inputMatrix = roundInfo.data.input;
+  if (inputMatrix) {
+    const stepContainer = document.createElement("div");
+    stepContainer.classList.add("step");
+    stepContainer.id = "step-A";
 
-      // Create and display step name above the matrix
-      const stepTitle = document.createElement("h3");
-      stepTitle.innerHTML = `${stepName.replace(/([A-Z])/g, ' $1').trim()}`; // Format step name
-      stepContainer.appendChild(stepTitle);
+    const stepTitle = document.createElement("h3");
+    stepTitle.innerHTML = "Input"; // Display the step name
+    stepContainer.appendChild(stepTitle);
 
-      // Create table for the matrix
-      const tableContainer = document.createElement("table");
-      tableContainer.classList.add("step-table");
-      if (stepIndex === currentStepIndex) {
-        tableContainer.classList.add("active"); // Highlight the active matrix
-      }
+    const tableContainer = document.createElement("table");
+    tableContainer.classList.add("step-table");
+    tableContainer.appendChild(createTable(getHexTable(inputMatrix)));
+    stepContainer.appendChild(tableContainer);
+    stepsBox.appendChild(stepContainer);
+  }
 
-      tableContainer.appendChild(createTable(getHexTable(matrix)));
-      stepContainer.appendChild(tableContainer);
-      stepsBox.appendChild(stepContainer);
+  // Step A: KEY
+  const key0Matrix = roundInfo.data.key;
+  if (key0Matrix) {
+    const stepContainer = document.createElement("div");
+    stepContainer.classList.add("step");
+    stepContainer.id = "step-B";
 
-      stepIndex++;
-    }
+    const stepTitle = document.createElement("h3");
+    stepTitle.innerHTML = "Key"; // Display the step name
+    stepContainer.appendChild(stepTitle);
+
+    const tableContainer = document.createElement("table");
+    tableContainer.classList.add("step-table");
+    tableContainer.appendChild(createTable(getHexTable(key0Matrix)));
+    stepContainer.appendChild(tableContainer);
+    stepsBox.appendChild(stepContainer);
+  }
+
+  // Step 1: SUBSTITUTION BYTES
+  const subBytesMatrix = roundInfo.data.subBytes;
+  if (subBytesMatrix) {
+    const stepContainer = document.createElement("div");
+    stepContainer.classList.add("step");
+    stepContainer.id = "step-0";
+
+    const stepTitle = document.createElement("h3");
+    stepTitle.innerHTML = "Substitution Bytes"; // Display the step name
+    stepContainer.appendChild(stepTitle);
+
+    const tableContainer = document.createElement("table");
+    tableContainer.classList.add("step-table");
+    tableContainer.appendChild(createTable(getHexTable(subBytesMatrix)));
+    stepContainer.appendChild(tableContainer);
+    stepsBox.appendChild(stepContainer);
+  }
+
+  // Step 2: SHIFT ROWS
+  const shiftRowsMatrix = roundInfo.data.shiftRows;
+  if (shiftRowsMatrix) {
+    const stepContainer = document.createElement("div");
+    stepContainer.classList.add("step");
+    stepContainer.id = "step-1";
+
+    const stepTitle = document.createElement("h3");
+    stepTitle.innerHTML = "Shift Rows"; // Display the step name
+    stepContainer.appendChild(stepTitle);
+
+    const tableContainer = document.createElement("table");
+    tableContainer.classList.add("step-table");
+    tableContainer.appendChild(createTable(getHexTable(shiftRowsMatrix)));
+    stepContainer.appendChild(tableContainer);
+    stepsBox.appendChild(stepContainer);
+  }
+
+  // Step 3: MIX COLUMNS
+  const mixColumnsMatrix = roundInfo.data.mixColumns;
+  if (mixColumnsMatrix) {
+    const stepContainer = document.createElement("div");
+    stepContainer.classList.add("step");
+    stepContainer.id = "step-2";
+
+    const stepTitle = document.createElement("h3");
+    stepTitle.innerHTML = "Mix Columns"; // Display the step name
+    stepContainer.appendChild(stepTitle);
+
+    const tableContainer = document.createElement("table");
+    tableContainer.classList.add("step-table");
+    tableContainer.appendChild(createTable(getHexTable(mixColumnsMatrix)));
+    stepContainer.appendChild(tableContainer);
+    stepsBox.appendChild(stepContainer);
+  }
+
+  // Step 4: GENERATING NEW KEY (Key expansion)
+  const keyMatrix = roundInfo.data.key;
+  if (keyMatrix) {
+    const stepContainer = document.createElement("div");
+    stepContainer.classList.add("step");
+    stepContainer.id = "step-3";
+
+    const stepTitle = document.createElement("h3");
+    stepTitle.innerHTML = "Generating New Key"; // Display the step name
+    stepContainer.appendChild(stepTitle);
+
+    const tableContainer = document.createElement("table");
+    tableContainer.classList.add("step-table");
+    tableContainer.appendChild(createTable(getHexTable(keyMatrix)));
+    stepContainer.appendChild(tableContainer);
+    stepsBox.appendChild(stepContainer);
+  }
+
+  // Step 5: ADD ROUND KEY
+  const addRoundKeyMatrix = roundInfo.data.addRoundKey;
+  if (addRoundKeyMatrix) {
+    const stepContainer = document.createElement("div");
+    stepContainer.classList.add("step");
+    stepContainer.id = "step-4";
+
+    const stepTitle = document.createElement("h3");
+    stepTitle.innerHTML = "Add Round Key"; // Display the step name
+    stepContainer.appendChild(stepTitle);
+
+    const tableContainer = document.createElement("table");
+    tableContainer.classList.add("step-table");
+    tableContainer.appendChild(createTable(getHexTable(addRoundKeyMatrix)));
+    stepContainer.appendChild(tableContainer);
+    stepsBox.appendChild(stepContainer);
   }
 
   // Update navigation button visibility
   updateButtonVisibility();
 }
-
 function updateButtonVisibility() {
   // document.getElementById("prevStepBtn").disabled = currentStepIndex === 0;
   // document.getElementById("nextStepBtn").disabled = currentStepIndex === stepNames.length - 1;
