@@ -1,5 +1,7 @@
 let aesRoundsData = [];
 let currentRoundIndex = 0;
+let currentStepIndex = 0;
+const stepNames = ["input", "key", "addRoundKey", "subBytes", "shiftRows", "mixColumns"]; 
 
 Array.prototype.rotate = (function() {
   // save references to array functions to make lookup faster
@@ -263,39 +265,108 @@ function aes_init() {
     roundData.addRoundKey = state_arr;
 
     // Store round data in JSON
-    storeRoundData(round, roundData);}
-    // Display the first round
-    currentRoundIndex = 0;
-    displayRound(currentRoundIndex);
-    document.getElementById("prevRoundBtn").style.display = "inline-block";
-    document.getElementById("nextRoundBtn").style.display = "inline-block";
+    storeRoundData(round, roundData);
+  }
+
+  // Show the first round and reveal navigation buttons
+  currentRoundIndex = 0;
+  currentStepIndex = 0;
+  displayRound(currentRoundIndex);
+  showNavigationButtons(true);
 }
 
 function storeRoundData(roundNumber, roundData) {
   aesRoundsData.push({ round: roundNumber, data: roundData });
 }
 
-function displayRound(index) {
-  const roundInfo = aesRoundsData[index];
+function displayRound(roundIndex) {
+  const roundInfo = aesRoundsData[roundIndex];
   const stepsBox = document.querySelector("#results-container");
 
-  // Check if this is the final round to update heading
-  const isFinalRound = index === aesRoundsData.length - 1;
+  // Clear previous results
+  stepsBox.innerHTML = '';
+
+  const isFinalRound = roundIndex === aesRoundsData.length - 1;
   const headingText = isFinalRound ? "Final Round Result" : `ROUND : ${roundInfo.round}`;
   stepsBox.innerHTML = `<h2>${headingText}</h2> <br>`;
 
-  // Loop through each key in round data to display each transformation step
-  for (const [step, matrix] of Object.entries(roundInfo.data)) {
-    stepsBox.innerHTML += `${step}:`;
-    stepsBox.appendChild(createTable(getHexTable(matrix)));
-    stepsBox.innerHTML += "<br>";
+  // Display each step in the round
+  let stepIndex = 0;
+  for (const stepName of stepNames) {
+    const matrix = roundInfo.data[stepName];
+    if (matrix) {
+      // Create a div container for each step
+      const stepContainer = document.createElement("div");
+      stepContainer.classList.add("step");
+      stepContainer.id = `step-${stepIndex}`;
+
+      // Create and display step name above the matrix
+      const stepTitle = document.createElement("h3");
+      stepTitle.innerHTML = `${stepName.replace(/([A-Z])/g, ' $1').trim()}`; // Format step name
+      stepContainer.appendChild(stepTitle);
+
+      // Create table for the matrix
+      const tableContainer = document.createElement("table");
+      tableContainer.classList.add("step-table");
+      if (stepIndex === currentStepIndex) {
+        tableContainer.classList.add("active"); // Highlight the active matrix
+      }
+
+      tableContainer.appendChild(createTable(getHexTable(matrix)));
+      stepContainer.appendChild(tableContainer);
+      stepsBox.appendChild(stepContainer);
+
+      stepIndex++;
+    }
+  }
+
+  // Update navigation button visibility
+  updateButtonVisibility();
+}
+
+function updateButtonVisibility() {
+  // document.getElementById("prevStepBtn").disabled = currentStepIndex === 0;
+  // document.getElementById("nextStepBtn").disabled = currentStepIndex === stepNames.length - 1;
+  document.getElementById("prevRoundBtn").disabled = currentRoundIndex === 0;
+  document.getElementById("nextRoundBtn").disabled = currentRoundIndex === aesRoundsData.length - 1;
+}
+
+// Show/hide navigation buttons based on encryption state
+function showNavigationButtons(show) {
+  document.getElementById("prevRoundBtn").style.display = show ? "inline-block" : "none";
+  document.getElementById("nextRoundBtn").style.display = show ? "inline-block" : "none";
+  document.getElementById("prevStepBtn").style.display = show ? "inline-block" : "none";
+  document.getElementById("nextStepBtn").style.display = show ? "inline-block" : "none";
+}
+
+// Step navigation functions
+function nextStep() {
+  if (currentStepIndex < stepNames.length - 1) {
+    currentStepIndex++;
+    displayRound(currentRoundIndex);
+  } else if (currentRoundIndex < aesRoundsData.length - 1) {
+    currentRoundIndex++;
+    currentStepIndex = 0;
+    displayRound(currentRoundIndex);
   }
 }
 
-// Navigation functions
+function prevStep() {
+  if (currentStepIndex > 0) {
+    currentStepIndex--;
+    displayRound(currentRoundIndex);
+  } else if (currentRoundIndex > 0) {
+    currentRoundIndex--;
+    currentStepIndex = stepNames.length - 1;
+    displayRound(currentRoundIndex);
+  }
+}
+
+// Round navigation functions
 function prevRound() {
   if (currentRoundIndex > 0) {
     currentRoundIndex--;
+    currentStepIndex = 0;
     displayRound(currentRoundIndex);
   }
 }
@@ -303,19 +374,10 @@ function prevRound() {
 function nextRound() {
   if (currentRoundIndex < aesRoundsData.length - 1) {
     currentRoundIndex++;
+    currentStepIndex = 0;
     displayRound(currentRoundIndex);
   }
 }
-
-// Add buttons for navigation
-document.addEventListener("DOMContentLoaded", function () {
-  const navigationBox = document.querySelector("#navigation-box");
-  navigationBox.innerHTML = `
-    <button onclick="prevRound()">Previous Round</button>
-    <button onclick="nextRound()">Next Round</button>
-  `;
-});
-
 
 //rotates left with 1 unit
 function rotateLeftOneUnit(l){
