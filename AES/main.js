@@ -462,6 +462,10 @@ function GFmultiply(A,B,N){ //145
   return res_string.substring(7);
 }
 
+function hexToBinary(hex) {
+  return parseInt(hex, 16).toString(2).padStart(8, '0');
+}
+
 function createTable(tableData) {
   var table = document.createElement('table');
   var tableBody = document.createElement('tbody');
@@ -471,6 +475,8 @@ function createTable(tableData) {
 
     rowData.forEach(function(cellData) {
       var cell = document.createElement('td');
+      var binaryData = hexToBinary(cellData);
+      cell.title = binaryData;
       cell.appendChild(document.createTextNode(cellData));
       row.appendChild(cell);
     });
